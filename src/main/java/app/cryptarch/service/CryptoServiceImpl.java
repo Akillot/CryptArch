@@ -38,10 +38,9 @@ public class CryptoServiceImpl implements CryptoService {
     }
 
     @Override
-    public CryptoResponse getById(Long id) {
+    public CryptoResponse findById(Long id) {
        Crypto crypto = cryptoRepo.findById(id)
                .orElseThrow(() -> new RuntimeException("Crypto not found"));
-
        return toResponse(crypto);
     }
 

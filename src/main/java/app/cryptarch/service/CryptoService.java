@@ -8,5 +8,5 @@ import java.util.List;
 public interface CryptoService {
     CryptoResponse create(CryptoRequest createRequest);
     List<CryptoResponse> findAll();
-    CryptoResponse getById(Long id);
+    CryptoResponse findById(Long id);
 }
