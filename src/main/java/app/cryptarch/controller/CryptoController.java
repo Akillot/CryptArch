@@ -20,17 +20,17 @@ public class CryptoController {
     }
 
     @PostMapping
-    public CryptoResponse create(@RequestBody CryptoRequest cryptoRequest) {
-        return cryptoService.create(cryptoRequest);
+    public CryptoResponse create(@RequestBody CryptoRequest request) {
+        return cryptoService.create(request);
     }
 
     @GetMapping
-    public List<CryptoResponse> findAll() {
-        return cryptoService.findAll();
+    public List<CryptoResponse> getAll() {
+        return cryptoService.getAll();
     }
 
     @GetMapping("/{id}")
-    public CryptoResponse findById(@PathVariable Long id) {
-        return cryptoService.findById(id);
+    public CryptoResponse getById(@PathVariable Long id) {
+        return cryptoService.getById(id);
     }
 }
