@@ -17,6 +17,8 @@ public class CryptoServiceImpl implements CryptoService {
 
     private final CryptoRepo cryptoRepo;
 
+
+
     @Override
     public List<CryptoResponse> getAll() {
         return cryptoRepo.findAll().stream()

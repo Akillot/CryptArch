@@ -23,6 +23,8 @@ public class CryptoPriceServiceImpl implements CryptoPriceService {
                 .collect(Collectors.toList());
     }
 
+
+
     private CryptoPriceResponse mapToResponse(CryptoPrice entity) {
         CryptoPriceResponse dto = new CryptoPriceResponse();
         dto.setId(entity.getId());
