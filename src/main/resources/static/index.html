@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CryptArch</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
@@ -14,8 +15,7 @@
     <div class="navbar">
         <div class="navbar-left">
             <img src="images/logo.svg" alt="CryptArch Logo" class="logo">
-            <span class="brand">
-                <h3>CryptArch</h3></span>
+            <span class="brand"><h3>CryptArch</h3></span>
         </div>
         <nav class="navbar-right">
             <a href="#">News</a>
@@ -27,17 +27,22 @@
 
 <main>
     <div class="content">
-        <h1>Welcome to CryptArch</h1>
-        <p>Select a cryptocurrency and explore its price chart. Click on a data point to see related news.</p>
+        <h1>Cryptocurrency Dashboard</h1>
+        <p>Track live prices and view news for your favorite cryptocurrency.</p>
 
-        <div class="crypto-price">
+        <div class="crypto-controls">
             <input type="text" id="symbolInput" placeholder="Enter crypto symbol (e.g. BTC)">
-            <button id="loadPrice">Get Price</button>
+            <button id="loadPrice">Load Data</button>
             <p id="price"></p>
         </div>
 
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+
         <div class="crypto-news">
-            <input type="number" id="cryptoIdInput" placeholder="Enter crypto ID (e.g. 1)">
+            <h2>News</h2>
+            <input type="number" id="cryptoIdInput" placeholder="Crypto ID (e.g. 1)">
             <input type="datetime-local" id="fromDate">
             <input type="datetime-local" id="toDate">
             <button id="loadNews">Get News</button>
@@ -45,7 +50,6 @@
         </div>
     </div>
 </main>
-
 
 <footer>
     <div class="footer-container">
