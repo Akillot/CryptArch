@@ -11,12 +11,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CryptoApiServiceImpl implements CryptoApiService {
 
-    private final RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public Map<String, Object> fetchPriceFromApi(String symbol) {
         String url = "https://api.coingecko.com/api/v3/simple/price?ids="
         + symbol + "&vs_currencies=usd";
-        return restTemplate.getForObject(url, Map.class);
+
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        return response != null ? response : Map.of();
     }
 }

@@ -29,9 +29,23 @@
     <div class="content">
         <h1>Welcome to CryptArch</h1>
         <p>Select a cryptocurrency and explore its price chart. Click on a data point to see related news.</p>
-    </div>
 
+        <div class="crypto-price">
+            <input type="text" id="symbolInput" placeholder="Enter crypto symbol (e.g. BTC)">
+            <button id="loadPrice">Get Price</button>
+            <p id="price"></p>
+        </div>
+
+        <div class="crypto-news">
+            <input type="number" id="cryptoIdInput" placeholder="Enter crypto ID (e.g. 1)">
+            <input type="datetime-local" id="fromDate">
+            <input type="datetime-local" id="toDate">
+            <button id="loadNews">Get News</button>
+            <ul id="newsList"></ul>
+        </div>
+    </div>
 </main>
+
 
 <footer>
     <div class="footer-container">

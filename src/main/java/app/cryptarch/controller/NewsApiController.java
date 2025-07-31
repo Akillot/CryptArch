@@ -2,6 +2,7 @@ package app.cryptarch.controller;
 
 import app.cryptarch.service.NewsApiService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,11 +20,20 @@ public class NewsApiController {
     private final NewsApiService newsApiService;
 
     @GetMapping
-    public List<Map<String, Object>> getNewsFromApi(
+    public ResponseEntity<List<Map<String, Object>>> getNewsFromApi(
             @RequestParam String keyword,
-            @RequestParam ZonedDateTime from,
-            @RequestParam ZonedDateTime to
+            @RequestParam String from,
+            @RequestParam String to
     ) {
-        return newsApiService.fetchNewsByDateAndKeywords(keyword, from, to);
+        ZonedDateTime fromDate = ZonedDateTime.parse(from);
+        ZonedDateTime toDate = ZonedDateTime.parse(to);
+
+        List<Map<String, Object>> news = newsApiService.fetchNewsByDateAndKeywords(keyword, fromDate, toDate);
+
+        if (news.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(news);
     }
 }

@@ -31,6 +31,11 @@ public class NewsApiServiceImpl implements NewsApiService {
         );
 
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+        if(response == null || !response.containsKey("articles")) {
+            return List.of();
+        }
+
         return (List<Map<String, Object>>) response.get("articles");
     }
 }
