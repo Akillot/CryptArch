@@ -16,7 +16,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CryptoApiController {
 
-    private final CryptoApiService cryptoApiService;
     private final CryptoApiServiceImpl cryptoApiServiceImpl;
 
     @GetMapping("/price/{symbol}")
