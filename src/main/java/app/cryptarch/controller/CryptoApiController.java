@@ -1,6 +1,5 @@
 package app.cryptarch.controller;
 
-import app.cryptarch.service.CryptoApiService;
 import app.cryptarch.service.impl.CryptoApiServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
