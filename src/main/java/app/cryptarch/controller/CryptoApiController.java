@@ -2,6 +2,7 @@ package app.cryptarch.controller;
 
 import app.cryptarch.service.impl.CryptoApiServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,19 +19,23 @@ public class CryptoApiController {
     private final CryptoApiServiceImpl cryptoApiServiceImpl;
 
     @GetMapping("/price/{symbol}")
-    public ResponseEntity<Map<String,Object>> getPriceFromApi(@PathVariable String symbol) {
+    public ResponseEntity<Map<String, Object>> getPriceFromApi(@PathVariable String symbol) {
         Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(symbol.toLowerCase());
 
-        if(priceData.isEmpty()){
-            return ResponseEntity.notFound().build();
+        if (priceData == null || priceData.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No price data available for " + symbol));
         }
 
-        Double price = null;
         if (priceData.containsKey(symbol.toLowerCase())) {
             Map<String, Object> symbolData = (Map<String, Object>) priceData.get(symbol.toLowerCase());
-            price = (Double) symbolData.get("usd");
+            if (symbolData != null && symbolData.containsKey("usd")) {
+                Number priceNumber = (Number) symbolData.get("usd");
+                return ResponseEntity.ok(Map.of("price", priceNumber.doubleValue()));
+            }
         }
 
-        return ResponseEntity.ok(Map.of("price", price));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Unexpected API response format for " + symbol));
     }
 }
