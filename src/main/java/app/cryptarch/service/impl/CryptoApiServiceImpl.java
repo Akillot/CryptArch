@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -40,5 +41,12 @@ public class CryptoApiServiceImpl implements CryptoApiService {
         }
 
         return response != null ? response : Map.of();
+    }
+
+    public List<Map<String, Object>> fetchAllCryptos(){
+        String url = "https://api.coingecko.com/api/v3/coins/list";
+        List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
+
+        return response != null ? response : List.of();
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -37,5 +38,17 @@ public class CryptoApiController {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Unexpected API response format for " + symbol));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getListPrices() {
+        List<Map<String,Object>> cryptos = cryptoApiServiceImpl.fetchAllCryptos();
+
+        if (cryptos.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No price data available for crypto"));
+        }
+
+        return ResponseEntity.ok(cryptos);
     }
 }
