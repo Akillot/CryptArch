@@ -19,12 +19,18 @@ public class CryptoApiController {
 
     @GetMapping("/price/{symbol}")
     public ResponseEntity<Map<String,Object>> getPriceFromApi(@PathVariable String symbol) {
-        Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(symbol);
+        Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(symbol.toLowerCase());
 
         if(priceData.isEmpty()){
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(priceData);
+        Double price = null;
+        if (priceData.containsKey(symbol.toLowerCase())) {
+            Map<String, Object> symbolData = (Map<String, Object>) priceData.get(symbol.toLowerCase());
+            price = (Double) symbolData.get("usd");
+        }
+
+        return ResponseEntity.ok(Map.of("price", price));
     }
 }
