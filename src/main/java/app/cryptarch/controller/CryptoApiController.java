@@ -21,21 +21,28 @@ public class CryptoApiController {
 
     @GetMapping("/price/{symbol}/{fiatcode}")
     public ResponseEntity<Map<String, Object>> getPriceFromApi(@PathVariable String symbol, @PathVariable String fiatcode) {
-        Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(symbol.toLowerCase(), fiatcode.toLowerCase());
+        String crypto = symbol.toLowerCase();
+        String fiat = fiatcode.toLowerCase();
 
-        if (priceData == null || priceData.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "No price data available for " + symbol));
+        Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(crypto, fiatcode);
+
+        if (isPriceDataInvalid(priceData,crypto, fiatcode)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No price data available for " + crypto + " in " + fiat));
         }
+        double price = extractPrice(priceData,crypto, fiatcode);
+        return ResponseEntity.ok(Map.of("price", price));
+    }
 
-        Map<String,Object> symbolData = (Map<String, Object>) priceData.get(symbol.toLowerCase());
-        if (symbolData != null && symbolData.containsKey(fiatcode.toLowerCase())) {
-                double priceNumber = ((Number) symbolData.get(fiatcode.toLowerCase())).doubleValue();
-                return ResponseEntity.ok(Map.of("price", priceNumber));
-        }
+    private boolean isPriceDataInvalid(Map<String, Object> priceData, String crypto, String fiat) {
+        if (priceData == null || priceData.isEmpty()) return true;
+        Map<String, Object> symbolData = (Map<String, Object>) priceData.get(crypto);
+        return symbolData == null || !symbolData.containsKey(fiat);
+    }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Unexpected API response format for " + symbol));
+    private double extractPrice(Map<String, Object> priceData, String crypto, String fiat) {
+        Map<String, Object> symbolData = (Map<String, Object>) priceData.get(crypto);
+        return ((Number) symbolData.get(fiat)).doubleValue();
     }
 
     //Get all cryptocurrencies
