@@ -22,17 +22,19 @@ public class CryptoApiServiceImpl implements CryptoApiService {
     private long lastCacheTime = 0;
 
     @Override
-    public synchronized Map<String, Object> fetchPriceFromApi(String symbol) {
+    public synchronized Map<String, Object> fetchPriceFromApi(String symbol, String fiatCurrencyCode) {
         long now = Instant.now().toEpochMilli();
+        String cacheKey = symbol + "_" + fiatCurrencyCode;
+
         if(now - lastCacheTime < 12_000 && lastPriceCache.containsKey(symbol)) {
-            return (Map<String, Object>) lastPriceCache.get(symbol);
+            return (Map<String, Object>) lastPriceCache.get(cacheKey);
         }
 
         if(!rateLimiter.tryConsume()){
             return Map.of("Error", "Rate limit reached, wait");
         }
 
-        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + symbol + "&vs_currencies=usd";
+        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + symbol + "&vs_currencies=" + fiatCurrencyCode;
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
         if(response != null){
@@ -45,6 +47,13 @@ public class CryptoApiServiceImpl implements CryptoApiService {
 
     public List<Map<String, Object>> fetchAllCryptos(){
         String url = "https://api.coingecko.com/api/v3/coins/list";
+        List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
+
+        return response != null ? response : List.of();
+    }
+
+    public List<Map<String, Object>> fetchAllCryptoInfo(){
+        String url = "https://api.coingecko.com/api/v3/coins/markets";
         List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
 
         return response != null ? response : List.of();

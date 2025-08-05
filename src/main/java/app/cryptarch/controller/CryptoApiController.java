@@ -13,33 +13,32 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/external/crypto")
+@RequestMapping("/api/crypto")
 @RequiredArgsConstructor
 public class CryptoApiController {
 
     private final CryptoApiServiceImpl cryptoApiServiceImpl;
 
-    @GetMapping("/price/{symbol}")
-    public ResponseEntity<Map<String, Object>> getPriceFromApi(@PathVariable String symbol) {
-        Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(symbol.toLowerCase());
+    @GetMapping("/price/{symbol}/{fiatcode}")
+    public ResponseEntity<Map<String, Object>> getPriceFromApi(@PathVariable String symbol, @PathVariable String fiatcode) {
+        Map<String, Object> priceData = cryptoApiServiceImpl.fetchPriceFromApi(symbol.toLowerCase(), fiatcode.toLowerCase());
 
         if (priceData == null || priceData.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "No price data available for " + symbol));
         }
 
-        if (priceData.containsKey(symbol.toLowerCase())) {
-            Map<String, Object> symbolData = (Map<String, Object>) priceData.get(symbol.toLowerCase());
-            if (symbolData != null && symbolData.containsKey("usd")) {
-                Number priceNumber = (Number) symbolData.get("usd");
-                return ResponseEntity.ok(Map.of("price", priceNumber.doubleValue()));
-            }
+        Map<String,Object> symbolData = (Map<String, Object>) priceData.get(symbol.toLowerCase());
+        if (symbolData != null && symbolData.containsKey(fiatcode.toLowerCase())) {
+                double priceNumber = ((Number) symbolData.get(fiatcode.toLowerCase())).doubleValue();
+                return ResponseEntity.ok(Map.of("price", priceNumber));
         }
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Unexpected API response format for " + symbol));
     }
 
+    //Get all cryptocurrencies
     @GetMapping("/list")
     public ResponseEntity<?> getListPrices() {
         List<Map<String,Object>> cryptos = cryptoApiServiceImpl.fetchAllCryptos();
