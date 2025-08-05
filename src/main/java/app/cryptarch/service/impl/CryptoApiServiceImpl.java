@@ -52,6 +52,18 @@ public class CryptoApiServiceImpl implements CryptoApiService {
         return response != null ? response : List.of();
     }
 
+    public Map<String, Object> fetchPriceForMultipleCryptos(List<String> symbols, String fiat) {
+        if (!rateLimiter.tryConsume()) {
+            return Map.of("error", "Rate limit reached, wait");
+        }
+
+        String ids = String.join(",", symbols);
+        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + ids + "&vs_currencies=" + fiat;
+        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+        return response != null ? response : Map.of();
+    }
+
     public List<Map<String, Object>> fetchAllCryptoInfo(){
         String url = "https://api.coingecko.com/api/v3/coins/markets";
         List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
