@@ -18,6 +18,7 @@ public class CryptoApiController {
     private final CryptoApiServiceImpl cryptoApiServiceImpl;
     private final CoinGeckoRateLimiter rateLimiter;
 
+    //Example: http://localhost:8081/api/crypto/price/bitcoin/usd
     @GetMapping("/price/{symbol}/{fiatcode}")
     public ResponseEntity<Map<String, Object>> getPriceFromApi(@PathVariable String symbol, @PathVariable String fiatcode) {
         String crypto = symbol.toLowerCase();
@@ -75,6 +76,7 @@ public class CryptoApiController {
         return ResponseEntity.ok(prices);
     }
 
+    //Example: http://localhost:8081/api/crypto/list
     @GetMapping("/list")
     public ResponseEntity<?> getListPrices() {
         List<Map<String, Object>> cryptos = cryptoApiServiceImpl.fetchAllCryptos();

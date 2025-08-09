@@ -64,6 +64,7 @@ public class CryptoApiServiceImpl implements CryptoApiService {
         return response != null ? response : Map.of();
     }
 
+    // In progress
     public List<Map<String, Object>> fetchAllCryptoInfo(){
         String url = "https://api.coingecko.com/api/v3/coins/markets";
         List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
