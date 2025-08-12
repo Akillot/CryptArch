@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -18,57 +18,53 @@ public class CryptoApiServiceImpl implements CryptoApiService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final CoinGeckoRateLimiter rateLimiter;
 
-    private Map<String, Object> lastPriceCache = new HashMap<>();
-    private long lastCacheTime = 0;
+    private static class CacheEntry {
+        Map<String, Object> data;
+        long ts;
+    }
+    private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
     @Override
-    public synchronized Map<String, Object> fetchPriceFromApi(String symbol, String fiatCurrencyCode) {
+    public synchronized Map<String, Object> fetchPriceFromApi(String symbol, String fiat) {
+        String key = symbol + "_" + fiat;
         long now = Instant.now().toEpochMilli();
-        String cacheKey = symbol + "_" + fiatCurrencyCode;
+        CacheEntry e = cache.get(key);
 
-        if(now - lastCacheTime < 12_000 && lastPriceCache.containsKey(symbol)) {
-            return (Map<String, Object>) lastPriceCache.get(cacheKey);
+        if (e != null && now - e.ts < 12_000) {
+            return e.data;
         }
 
-        if(!rateLimiter.tryConsume()){
-            return Map.of("Error", "Rate limit reached, wait");
+        if (!rateLimiter.tryConsume()) return Map.of();
+
+
+        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + symbol + "&vs_currencies=" + fiat;
+        Map<String, Object> resp = restTemplate.getForObject(url, Map.class);
+
+        if (resp != null) {
+            CacheEntry newEntry = new CacheEntry();
+            newEntry.data = resp;
+            newEntry.ts = now;
+            cache.put(key, newEntry);
         }
 
-        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + symbol + "&vs_currencies=" + fiatCurrencyCode;
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
-        if(response != null){
-            lastPriceCache.put(symbol, response);
-            lastCacheTime = now;
-        }
-
-        return response != null ? response : Map.of();
+        return resp != null ? resp : Map.of();
     }
 
-    public List<Map<String, Object>> fetchAllCryptos(){
+    public List<Map<String, Object>> fetchAllCryptos() {
         String url = "https://api.coingecko.com/api/v3/coins/list";
         List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
-
         return response != null ? response : List.of();
     }
 
     public Map<String, Object> fetchPriceForMultipleCryptos(List<String> symbols, String fiat) {
         if (!rateLimiter.tryConsume()) {
-            return Map.of("error", "Rate limit reached, wait");
+            return Map.of();
         }
+        String ids = String.join(",", symbols.stream().map(String::toLowerCase).toList());
+        String vs = fiat.toLowerCase();
 
-        String ids = String.join(",", symbols);
-        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + ids + "&vs_currencies=" + fiat;
+        String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + ids + "&vs_currencies=" + vs;
         Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-
         return response != null ? response : Map.of();
-    }
-
-    // In progress
-    public List<Map<String, Object>> fetchAllCryptoInfo(){
-        String url = "https://api.coingecko.com/api/v3/coins/markets";
-        List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
-
-        return response != null ? response : List.of();
     }
 }
