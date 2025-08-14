@@ -27,6 +27,7 @@ public class OverviewService {
         if (!coinGeckoLimiter.tryConsume()) {
             throw new RateLimitException("CoinGecko rate limit reached");
         }
+
         Map<String,Object> priceMap = cryptoApi.fetchPriceFromApi(id, vs);
         double price = extractPrice(priceMap, id, vs);
 

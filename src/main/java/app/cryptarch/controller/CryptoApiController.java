@@ -20,27 +20,26 @@ public class CryptoApiController {
 
     private final CryptoApiServiceImpl cryptoApiServiceImpl;
     private final CoinGeckoRateLimiter rateLimiter;
+    private final OverviewService overviewService;
 
-    // Example: http://localhost:8081/api/crypto/overview/bitcoin?fiat=usd&days=7
+    // Example: http://localhost:8081/api/crypto/bitcoin/overview?fiat=usd&days=7
     @GetMapping("/{id}/overview")
     public ResponseEntity<?> overview(
             @PathVariable String id,
             @RequestParam(defaultValue = "usd") String fiat,
-            @RequestParam(defaultValue = "7") int days,
-            OverviewService overviewService
-    ) {
+            @RequestParam(defaultValue = "7") int days) {
         try {
-            var dto = overviewService.getOverview(id, fiat, days);
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(overviewService.getOverview(id, fiat, days));
         } catch (OverviewService.RateLimitException e) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(429).body(Map.of("error", e.getMessage()));
         } catch (OverviewService.NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            return ResponseEntity.status(e.getStatusCode().value())
+                    .body(Map.of("error", "Upstream error: " + e.getStatusText()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to build overview"));
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to build overview: " + e.getMessage()));
         }
     }
 
